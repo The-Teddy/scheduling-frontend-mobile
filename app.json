@@ -2,6 +2,12 @@
   "expo": {
     "name": "scheduling",
     "slug": "scheduling",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "splash": {
+      "image": "./src/assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": { "fallbackToCacheTimeout": 0 }
   }
 }
