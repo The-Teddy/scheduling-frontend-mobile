@@ -47,7 +47,7 @@ const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
     code: string | null
   ) {
     const data = {
-      email,
+      email: email.toLowerCase(),
       password,
       codeEmail: code ?? null,
     };

@@ -60,7 +60,7 @@ const Register = ({
     }
     const data = {
       name,
-      email,
+      email: email.toLowerCase(),
       password,
     };
     setLoading(true);
@@ -77,7 +77,12 @@ const Register = ({
         console.log(res);
       })
       .catch((error) => {
-        console.log(error);
+        Toast.show({
+          type: "error",
+          text1: "Email não disponível.",
+          text2: error.response.data.message,
+        });
+        console.error(error);
       })
       .finally(() => {
         setTimeout(() => {

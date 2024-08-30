@@ -1,3 +1,5 @@
+import config from "../../config.json";
+
 function handleConverterId(binaryId: Buffer | undefined): string {
   const hex = binaryId?.toString("hex");
   const uuid = `${hex?.slice(0, 8)}-${hex?.slice(8, 4)}-${hex?.slice(
@@ -31,10 +33,13 @@ function handleValidateEmailCode(code: string | null) {
 function handleIsNumber(input: string): string {
   return input.replace(/\D/g, "");
 }
-
+function handleGetEnvVariable() {
+  return config.REACT_APP_API_URL;
+}
 export {
   handleConverterId,
   handleValidateEmail,
   handleValidateEmailCode,
   handleIsNumber,
+  handleGetEnvVariable,
 };
