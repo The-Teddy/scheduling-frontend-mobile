@@ -1,33 +1,44 @@
 import { handleGetEnvVariable } from "@src/services/utils";
-import React, { useContext, useEffect, useState } from "react";
-import { View, Image, ActivityIndicator } from "react-native";
+import React, { useEffect, useContext, useState } from "react";
+import {
+  View,
+  Image,
+  ActivityIndicator,
+  TouchableOpacity,
+  ImageBackground,
+  Text,
+} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { styles } from "./styles";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { ParamListBase } from "@react-navigation/native";
 import { Context } from "../auth/AuthContext";
-import { getUser, uploadLogoUser } from "@src/services/api";
-import profileImage from "@src/assets/images/profile.png";
+import { getUser, uploadCoverUser, uploadLogoUser } from "@src/services/api";
 import { UserInterface } from "./UserInterface";
+import profileImage from "@src/assets/images/profile.png";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { TouchableOpacity } from "react-native";
-import { ProfilePhotoModal } from "@src/components/partials/ProfilePhotoModal";
-import { Alert } from "react-native";
+import { ConfirmModal } from "@src/components/partials/ConfirmModal";
+import { StyledTextInput } from "../auth/styles";
 
 const Profile = ({
   navigation,
 }: {
   navigation: StackNavigationProp<ParamListBase>;
 }) => {
-  const [image, setImage] =
+  const [imageLogo, setImageLogo] =
+    useState<ImagePicker.ImagePickerSuccessResult | null>(null);
+  const [imageCover, setImageCover] =
     useState<ImagePicker.ImagePickerSuccessResult | null>(null);
   const { token } = useContext(Context);
   const [loading, setLoading] = useState<boolean>(false);
   const [data, setData] = useState<UserInterface | null>(null);
   const [viewModal, setViewModal] = useState<boolean>(false);
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [document, setDocument] = useState<string>("");
   const [isProfile, setIsProfile] = useState<boolean>(false);
 
-  const pickImage = async () => {
+  const pickImage = async (isCover: boolean) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== "granted") {
@@ -40,74 +51,90 @@ const Profile = ({
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: false,
-      // aspect: [3, 3],
       quality: 1,
     });
     if (!result.canceled) {
-      setImage(result);
-      handleUploadLogo();
+      setViewModal(true);
+      if (isCover) {
+        setImageCover(result);
+      } else {
+        setImageLogo(result);
+      }
     }
   };
-  // const takePhoto = async () => {
-  //   const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
-  //   if (status !== "granted") {
-  //     alert("Desculpe, precisamos de permissões para acessar sua câmera");
-  //     return;
-  //   }
-
-  //   const result = await ImagePicker.launchCameraAsync({
-  //     allowsEditing: true,
-  //     aspect: [3, 3],
-  //     quality: 1,
-  //   });
-
-  //   if (!result.canceled) {
-  //     setImage(result);
-  //   }
-  // };
   function handleUploadLogo() {
     const formData = new FormData();
     formData.append("file", {
-      uri: image?.assets[0].uri,
-      type: image?.assets[0].mimeType,
-      name: image?.assets[0].fileName,
-      imageSize: image?.assets[0].fileSize,
+      uri: imageLogo?.assets[0].uri,
+      type: imageLogo?.assets[0].mimeType,
+      name: imageLogo?.assets[0].fileName,
+      imageSize: imageLogo?.assets[0].fileSize,
     } as any);
 
     setLoading(true);
-    setViewModal(false);
-
+    formData.append("old_path_logo", data?.logo ? data.logo : "");
     uploadLogoUser(formData, token)
       .then((res) => {
-        console.log(res);
+        setViewModal(false);
+        handleGetUser();
       })
       .catch((error) => {
-        console.error(error.message);
+        console.log(error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }
+  function handleUpdateCover() {
+    const formData = new FormData();
+
+    formData.append("file", {
+      uri: imageCover?.assets[0].uri,
+      type: imageCover?.assets[0].mimeType,
+      name: imageCover?.assets[0].fileName,
+      imageSize: imageCover?.assets[0].fileSize,
+    } as any);
+
+    formData.append("old_path_cover", data?.cover ? data.cover : "");
+
+    setLoading(true);
+    uploadCoverUser(formData, token)
+      .then((res) => {
+        handleGetUser();
+        setViewModal(false);
+      })
+      .catch((error) => {
+        console.log(error);
       })
       .finally(() => {
         setLoading(false);
       });
   }
   function handleGetUser() {
+    setLoading(true);
     getUser(token)
       .then((res) => {
-        res.data.data.logo = handleGetEnvVariable() + "/" + res.data.data.logo;
         setData(res.data.data);
       })
       .catch((error) => {
         console.error(error);
       })
-      .finally(() => {});
+      .finally(() => {
+        setLoading(false);
+      });
   }
   useEffect(() => {
     handleGetUser();
   }, []);
-  console.log(data?.logo);
+
   return (
     <>
       <View style={styles.container}>
-        <View style={[{}, styles.containerImage]}>
+        <ImageBackground
+          source={{ uri: handleGetEnvVariable() + "/" + data?.cover }}
+          style={[{}, styles.containerImage]}
+        >
           <View style={styles.containerLogo}>
             <View style={styles.logoBox}>
               {loading ? (
@@ -121,10 +148,10 @@ const Profile = ({
               )}
               <Image
                 source={
-                  image?.assets[0]?.uri
-                    ? { uri: image.assets[0].uri }
+                  imageLogo?.assets[0]?.uri
+                    ? { uri: imageLogo.assets[0].uri }
                     : data?.logo
-                    ? { uri: data.logo }
+                    ? { uri: handleGetEnvVariable() + "/" + data.logo }
                     : profileImage
                 }
                 style={[{ opacity: loading ? 0.5 : 1 }, styles.image]}
@@ -133,7 +160,9 @@ const Profile = ({
 
             <TouchableOpacity
               style={styles.containerIcon}
-              onPress={() => [setIsProfile(true), setViewModal(true)]}
+              onPress={() => {
+                setIsProfile(true), pickImage(false);
+              }}
             >
               <FontAwesome
                 style={styles.cameraIcon}
@@ -144,7 +173,9 @@ const Profile = ({
             </TouchableOpacity>
           </View>
           <TouchableOpacity
-            onPress={() => [setIsProfile(false), setViewModal(true)]}
+            onPress={() => {
+              setIsProfile(false), pickImage(true);
+            }}
             style={[styles.containerIcon, { right: 20, bottom: 15 }]}
           >
             <FontAwesome
@@ -154,16 +185,43 @@ const Profile = ({
               color="black"
             />
           </TouchableOpacity>
+        </ImageBackground>
+        <View style={styles.containerContent}>
+          <Text style={styles.title}>Dados do usuário</Text>
+          <Text style={styles.labelInput}>Nome Fantasia:</Text>
+          <StyledTextInput
+            placeholder="João Augusto"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            style={styles.input}
+          />
+          <Text style={styles.labelInput}>Email:</Text>
+          <StyledTextInput
+            placeholder="Email"
+            value={email}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            style={styles.input}
+          />
+          <Text style={styles.labelInput}>Documento:</Text>
+          <StyledTextInput
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            style={styles.input}
+          />
         </View>
       </View>
-      <ProfilePhotoModal
-        handleViewPhoto={() =>
-          isProfile ? Alert.alert("é perfil") : Alert.alert("é capa")
+      <ConfirmModal
+        title="Você realmente desejar salvar esta foto?"
+        loading={loading}
+        handleSubmit={() =>
+          isProfile ? handleUploadLogo() : handleUpdateCover()
         }
-        handleChoosePhoto={() =>
-          isProfile ? pickImage() : Alert.alert("é capa")
-        }
-        isProfile={isProfile}
         setView={viewModal}
         handleViewModal={() => setViewModal(false)}
       />

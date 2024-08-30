@@ -26,7 +26,6 @@ export const styles = StyleSheet.create({
     backgroundColor: "#f2f2f2",
     height: 200,
     width: "100%",
-    padding: 10,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -43,5 +42,15 @@ export const styles = StyleSheet.create({
     borderRadius: 30,
     backgroundColor: "#f2f2f2",
   },
-  cameraIcon: {},
+  containerContent: {
+    width: "100%",
+    padding: 20,
+  },
+  title: {
+    fontWeight: "bold",
+    fontSize: 16,
+    marginBottom: 30,
+    marginTop: 30,
+    textAlign: "center",
+  },
 });

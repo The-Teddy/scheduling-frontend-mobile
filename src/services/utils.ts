@@ -1,4 +1,6 @@
+import { HeadersInterface } from "@src/utils/interfaces/HeadersInterface";
 import config from "../../config.json";
+import { AxiosHeaders } from "axios";
 
 function handleConverterId(binaryId: Buffer | undefined): string {
   const hex = binaryId?.toString("hex");
@@ -36,10 +38,24 @@ function handleIsNumber(input: string): string {
 function handleGetEnvVariable() {
   return config.REACT_APP_API_URL;
 }
+function handleGetHeaders(contentType: string, token?: string) {
+  const headers: any = {
+    Accept: "application/json",
+    "Content-Type": contentType,
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  return headers;
+}
+
 export {
   handleConverterId,
   handleValidateEmail,
   handleValidateEmailCode,
   handleIsNumber,
   handleGetEnvVariable,
+  handleGetHeaders,
 };

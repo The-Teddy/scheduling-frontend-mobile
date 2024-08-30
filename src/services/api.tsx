@@ -4,56 +4,48 @@ import {
   LoginInterface,
   RecoveryPasswordInterface,
 } from "@src/screens/auth/user.interface";
+import { handleGetHeaders } from "./utils";
 
 const api = config.REACT_APP_API_URL;
 
 //Rotas "públicas"
 export function createUser(data: any) {
-  const headers = {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  };
   return axios.post(`${api}/user/create`, data, {
-    headers: headers,
+    headers: handleGetHeaders("application/json"),
   });
 }
 export function login(data: LoginInterface) {
-  const headers = {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  };
   return axios.post(`${api}/auth/login`, data, {
-    headers: headers,
+    headers: handleGetHeaders("application/json"),
   });
 }
 
 export function recoveryPassword(data: RecoveryPasswordInterface) {
-  const headers = {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  };
-  return axios.post(`${api}/auth/change-password`, data, { headers });
+  return axios.post(`${api}/auth/change-password`, data, {
+    headers: handleGetHeaders("application/json"),
+  });
 }
 export function sendCodeEmail(email: string) {
-  const headers = {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  };
-  return axios.post(`${api}/email/send-code`, { email }, { headers });
+  return axios.post(
+    `${api}/email/send-code`,
+    { email },
+    { headers: handleGetHeaders("application/json") }
+  );
 }
 
 //Rotas "privadas"
 export function uploadLogoUser(data: FormData, token: string) {
-  const headers = {
-    "Content-Type": "multipart/form-data",
-    Authorization: `Bearer ${token}`,
-  };
-  return axios.put(`${api}/upload/logo`, data, { headers });
+  return axios.put(`${api}/upload/logo`, data, {
+    headers: handleGetHeaders("multipart/form-data", token),
+  });
+}
+export function uploadCoverUser(data: FormData, token: string) {
+  return axios.put(`${api}/upload/cover`, data, {
+    headers: handleGetHeaders("multipart/form-data", token),
+  });
 }
 export function getUser(token: string) {
-  const headers = {
-    "Content-Type": "multipart/form-data",
-    Authorization: `Bearer ${token}`,
-  };
-  return axios.get(`${api}/user`, { headers });
+  return axios.get(`${api}/user`, {
+    headers: handleGetHeaders("application/json", token),
+  });
 }
