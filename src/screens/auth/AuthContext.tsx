@@ -55,7 +55,14 @@ const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
       return Toast.show({
         type: "error",
         text1: "Erro no email!",
-        text2: "Insira um email válido!",
+        text2: "Insira um email válido.",
+      });
+    }
+    if (password.length < 8) {
+      return Toast.show({
+        type: "error",
+        text1: "Erro na senha!",
+        text2: "Insira uma senha válida.",
       });
     }
     const validateEmail = handleValidateEmailCode(code);
@@ -108,11 +115,6 @@ const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
     AsyncStorage.removeItem("userData");
     setToken("");
     setUser(null);
-    Toast.show({
-      type: "success",
-      text1: "Logout!",
-      text2: "Logout efetuado com sucesso!",
-    });
   }
 
   useEffect(() => {
@@ -123,7 +125,7 @@ const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
         setToken(storedToken);
         setUser(userData ? JSON.parse(userData) : null);
       } catch (error) {
-        console.error("Failed to load initial data", error);
+        console.log("Failed to load initial data", error);
       }
     }
 

@@ -7,6 +7,7 @@ import {
 import { handleGetHeaders } from "./utils";
 
 const api = config.REACT_APP_API_URL;
+axios.defaults.timeout = 30000;
 
 //Rotas "públicas"
 export function createUser(data: any) {

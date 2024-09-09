@@ -4,7 +4,13 @@ import COLORS from "@src/styles/theme";
 import { Routes } from "./routes/routes";
 import Toast from "react-native-toast-message";
 import { AuthContextProvider } from "./screens/auth/AuthContext";
+import NetInfo from "@react-native-community/netinfo";
 
+NetInfo.fetch().then((state) => {
+  if (!state.isConnected) {
+    console.log("Sem conexão com a Internet");
+  }
+});
 function App() {
   return (
     <ThemeProvider theme={COLORS}>

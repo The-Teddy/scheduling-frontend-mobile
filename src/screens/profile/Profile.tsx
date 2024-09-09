@@ -19,6 +19,7 @@ import profileImage from "@src/assets/images/profile.png";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { ConfirmModal } from "@src/components/partials/ConfirmModal";
 import { StyledTextInput } from "../auth/styles";
+import Toast from "react-native-toast-message";
 
 const Profile = ({
   navigation,
@@ -29,8 +30,9 @@ const Profile = ({
     useState<ImagePicker.ImagePickerSuccessResult | null>(null);
   const [imageCover, setImageCover] =
     useState<ImagePicker.ImagePickerSuccessResult | null>(null);
-  const { token } = useContext(Context);
+  const { token, handleLogout } = useContext(Context);
   const [loading, setLoading] = useState<boolean>(false);
+  const [loadingImage, setLoadingImage] = useState<boolean>(false);
   const [data, setData] = useState<UserInterface | null>(null);
   const [viewModal, setViewModal] = useState<boolean>(false);
   const [name, setName] = useState<string>("");
@@ -54,11 +56,19 @@ const Profile = ({
       quality: 1,
     });
     if (!result.canceled) {
-      setViewModal(true);
+      setLoadingImage(true);
       if (isCover) {
         setImageCover(result);
+        // setTimeout(() => {
+        //   setLoading(false);
+        //   setViewModal(true);
+        // }, 1500);
       } else {
         setImageLogo(result);
+        // setTimeout(() => {
+        //   setLoading(false);
+        //   setViewModal(true);
+        // }, 1500);
       }
     }
   };
@@ -77,10 +87,26 @@ const Profile = ({
     uploadLogoUser(formData, token)
       .then((res) => {
         setViewModal(false);
+        Toast.show({
+          type: "success",
+          text1: "Logo carregada com sucesso.",
+        });
         handleGetUser();
       })
       .catch((error) => {
+        Toast.show({
+          type: "error",
+          text1: "Erro ao carregar logo.",
+          text2: "Tente novamente",
+        });
         console.log(error);
+        // if (error.response) {
+        //   console.log("Erro no servidor:", error.response.data);
+        // } else if (error.request) {
+        //   console.log("Sem resposta do servidor:", error.request);
+        // } else {
+        //   console.log("Erro na requisição:", error.message);
+        // }
       })
       .finally(() => {
         setLoading(false);
@@ -102,10 +128,27 @@ const Profile = ({
     uploadCoverUser(formData, token)
       .then((res) => {
         handleGetUser();
+        Toast.show({
+          type: "success",
+          text1: "Capa carregada com sucesso.",
+        });
+        handleGetUser();
         setViewModal(false);
       })
       .catch((error) => {
+        Toast.show({
+          type: "error",
+          text1: "Erro ao carregar capa.",
+          text2: "Tente novamente",
+        });
         console.log(error);
+        // if (error.response) {
+        //   console.log("Erro no servidor:", error.response.data);
+        // } else if (error.request) {
+        //   console.log("Sem resposta do servidor:", error.request);
+        // } else {
+        //   console.log("Erro na requisição:", error.message);
+        // }
       })
       .finally(() => {
         setLoading(false);
@@ -118,15 +161,33 @@ const Profile = ({
         setData(res.data.data);
       })
       .catch((error) => {
-        console.error(error);
+        console.log(error);
+        if (error.response && error.response.status === 401) {
+          Toast.show({
+            type: "info",
+            text1: "Sessão expirada!",
+            text2: "Faça o login novamente.",
+          });
+          handleLogout();
+        }
       })
       .finally(() => {
         setLoading(false);
       });
   }
   useEffect(() => {
-    handleGetUser();
-  }, []);
+    const unsubscribre = navigation.addListener("focus", () => {
+      handleGetUser();
+    });
+    return unsubscribre;
+  }, [navigation]);
+
+  useEffect(() => {
+    if (loadingImage) {
+      setLoadingImage(false);
+      setViewModal(true);
+    }
+  }, [imageCover, imageLogo]);
 
   return (
     <>
@@ -137,7 +198,7 @@ const Profile = ({
         >
           <View style={styles.containerLogo}>
             <View style={styles.logoBox}>
-              {loading ? (
+              {loadingImage ? (
                 <ActivityIndicator
                   style={{ position: "absolute" }}
                   size="large"
@@ -154,7 +215,7 @@ const Profile = ({
                     ? { uri: handleGetEnvVariable() + "/" + data.logo }
                     : profileImage
                 }
-                style={[{ opacity: loading ? 0.5 : 1 }, styles.image]}
+                style={[{ opacity: loadingImage ? 0.5 : 1 }, styles.image]}
               />
             </View>
 

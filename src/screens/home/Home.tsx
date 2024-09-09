@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import { Button, Text, View } from "react-native";
 import { Context } from "../auth/AuthContext";
+import Toast from "react-native-toast-message";
 
 const Home = ({ navigation }: { navigation: any }) => {
   const { user, handleLogout } = useContext(Context);
@@ -16,7 +17,17 @@ const Home = ({ navigation }: { navigation: any }) => {
     >
       <Text>Hello, {user?.name}</Text>
       <Button title="Profile" onPress={() => navigation.navigate("Profile")} />
-      <Button title="Logout" onPress={handleLogout} />
+      <Button
+        title="Logout"
+        onPress={() => {
+          handleLogout(),
+            Toast.show({
+              type: "success",
+              text1: "Logout!",
+              text2: "Logout efetuado com sucesso!",
+            });
+        }}
+      />
     </View>
   );
 };

@@ -1,6 +1,4 @@
-import { HeadersInterface } from "@src/utils/interfaces/HeadersInterface";
 import config from "../../config.json";
-import { AxiosHeaders } from "axios";
 
 function handleConverterId(binaryId: Buffer | undefined): string {
   const hex = binaryId?.toString("hex");
