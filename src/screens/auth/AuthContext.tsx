@@ -103,6 +103,25 @@ const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
             text1: "Email não verificado",
             text2: error.response.data.error.message,
           });
+        } else if (error.response.data.error.notFound) {
+          setEmailNotVerified(true);
+          return Toast.show({
+            type: "error",
+            text1: "Seu código de verificação expirou.",
+            text2: error.response?.data?.error?.message,
+          });
+        } else if (error.response.data.error.codeExpired) {
+          setEmailNotVerified(true);
+          return Toast.show({
+            type: "error",
+            text1: "Seu código de verificação expirou.",
+            text2: error.response?.data?.error?.message,
+          });
+        } else {
+          return Toast.show({
+            type: "error",
+            text1: error.response.data.message,
+          });
         }
       })
       .finally(() => {
